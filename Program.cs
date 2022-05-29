@@ -23,8 +23,6 @@ foreach (Match match in allMatches)
     var restString = input.Substring(input.IndexOf(match.Value) + match.Value.Length).Trim();
     if (string.IsNullOrWhiteSpace(restString) || (restString.Length > 0 && restString[0] != '+'))
     {
-
-
         if (string.IsNullOrWhiteSpace(currentCompositeCode))
         {
             normalCodes.Add(match.Value);
