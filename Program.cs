@@ -4,45 +4,82 @@ Console.WriteLine("Welcome to CLP Parser!");
 
 string input = @"H    1  2 3        E  U    H 1   2   3     H    23    1  +  H   1      2   3 EUH    - 1   2   3
 
-EUH123 + H123     + EUH  6 7 8  H    -   456 EUH  - 390";
-
-string pattern1 = @"((H\s*?\d\s*?\d\s*?\d)|(E\s*?U\s*?H\s*?-?\s*?\d\s*?\d\s*?\d))?\+?((H\s*?\d\s*?\d\s*?\d)|(E\s*?U\s*?H\s*?-?\s*?\d\s*?\d\s*?\d))";
-
-string pattern2 = @"((H\s*?-?\s*?\d\s*?\d\s*?\d)|(E\s*?U\s*?H\s*?-?\s*?\d\s*?\d\s*?\d))";
-
-Regex t = new Regex(pattern2, RegexOptions.Multiline | RegexOptions.IgnoreCase);
-MatchCollection allMatches = t.Matches(input);
+EUH123 + H123     + EUH  6 7 8  H    -   456 EUH  - 390+H123";
 
 var normalCodes = new List<string>();
 var compositeCodes = new List<string>();
-
 var currentCompositeCode = string.Empty;
 
-foreach (Match match in allMatches)
-{
-    // Hanlde duplicate
-    if (normalCodes.Contains(match.Value) || compositeCodes.Contains(match.Value))
-    {
-        continue;
-    }
+PatternWithTakingPlusSign();
+//PatternWithoutTakingPlusSign();
 
-    var restString = input.Substring(input.IndexOf(match.Value) + match.Value.Length).Trim();
-    if (string.IsNullOrWhiteSpace(restString) || (restString.Length > 0 && restString[0] != '+'))
+void PatternWithTakingPlusSign()
+{
+    string pattern = @"(((H\s*?-?\s*?\d\s*?\d\s*?\d)|(E\s*?U\s*?H\s*?-?\s*?\d\s*?\d\s*?\d))\s*\+?)";
+
+    Regex t = new Regex(pattern, RegexOptions.Multiline | RegexOptions.IgnoreCase);
+    MatchCollection allMatches = t.Matches(input);
+
+    foreach (Match match in allMatches)
     {
-        if (string.IsNullOrWhiteSpace(currentCompositeCode))
+        string matchValue = Regex.Replace(match.Value, @"\s+", string.Empty);;
+
+        if (matchValue.Contains('+'))
         {
-            normalCodes.Add(match.Value);
+            currentCompositeCode = string.IsNullOrWhiteSpace(currentCompositeCode) ? matchValue : currentCompositeCode + matchValue;
         }
         else
         {
-            currentCompositeCode = string.IsNullOrWhiteSpace(currentCompositeCode.Trim()) ? match.Value.Trim() : currentCompositeCode + "+" + match.Value.Trim();
-            compositeCodes.Add(currentCompositeCode);
-            currentCompositeCode = string.Empty;
+            if (!string.IsNullOrWhiteSpace(currentCompositeCode))
+            {
+                currentCompositeCode = currentCompositeCode + matchValue;
+                compositeCodes.Add(currentCompositeCode);
+                currentCompositeCode = string.Empty;
+            }
+            else
+            {
+                normalCodes.Add(matchValue);
+            }
         }
     }
-    else
+}
+
+void PatternWithoutTakingPlusSign()
+{
+    string pattern = @"((H\s*?-?\s*?\d\s*?\d\s*?\d)|(E\s*?U\s*?H\s*?-?\s*?\d\s*?\d\s*?\d))";
+
+    Regex t = new Regex(pattern, RegexOptions.Multiline | RegexOptions.IgnoreCase);
+    MatchCollection allMatches = t.Matches(input);
+
+    foreach (Match match in allMatches)
     {
-        currentCompositeCode = string.IsNullOrWhiteSpace(currentCompositeCode.Trim()) ? match.Value.Trim() : currentCompositeCode + "+" + match.Value.Trim();
+        string matchValue = match.Value;
+
+        // Hanlde duplicate
+        if (normalCodes.Contains(match.Value) || compositeCodes.Contains(matchValue))
+        {
+            continue;
+        }
+
+        var restString = input.Substring(input.IndexOf(matchValue) + matchValue.Length).Trim();
+        if (string.IsNullOrWhiteSpace(restString) || (restString.Length > 0 && restString[0] != '+'))
+        {
+            if (string.IsNullOrWhiteSpace(currentCompositeCode))
+            {
+                normalCodes.Add(match.Value);
+            }
+            else
+            {
+                currentCompositeCode = string.IsNullOrWhiteSpace(currentCompositeCode.Trim()) ? matchValue.Trim() : currentCompositeCode + "+" + matchValue.Trim();
+                compositeCodes.Add(currentCompositeCode);
+                currentCompositeCode = string.Empty;
+            }
+        }
+        else
+        {
+            currentCompositeCode = string.IsNullOrWhiteSpace(currentCompositeCode.Trim()) ? matchValue.Trim() : currentCompositeCode + "+" + matchValue.Trim();
+        }
     }
 }
+
 Console.ReadLine();
