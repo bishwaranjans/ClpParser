@@ -33,12 +33,18 @@ void PatternWithTakingPlusSign()
             if (!string.IsNullOrWhiteSpace(currentCompositeCode))
             {
                 currentCompositeCode = currentCompositeCode + matchValue;
-                compositeCodes.Add(currentCompositeCode);
+                if (!compositeCodes.Contains(currentCompositeCode))
+                {
+                    compositeCodes.Add(currentCompositeCode);
+                }
                 currentCompositeCode = string.Empty;
             }
             else
             {
-                normalCodes.Add(matchValue);
+                if (!normalCodes.Contains(matchValue))
+                {
+                    normalCodes.Add(matchValue);
+                }
             }
         }
     }
